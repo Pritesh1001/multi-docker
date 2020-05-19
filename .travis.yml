@@ -1,0 +1,22 @@
+sudo: required
+services:
+    - docker
+
+before_install:
+    - docker build -t pritesh1001/react-test -f ./client/Dockerfile.dev ./client
+
+script:
+    - docker run pritesh1001/react-test npm test -- --coverage
+
+after_success:
+    - docker build -t pritesh1001/multi-client ./client
+    - docker build -t pritesh1001/multi-nginx ./nginx
+    - docker build -t pritesh1001/multi-server ./server
+    - docker build -t pritesh1001/multi-worker ./worker
+
+    - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+
+    - docker push pritesh1001/multi-client
+    - docker push pritesh1001/multi-nginx
+    - docker push pritesh1001/multi-server
+    - docker push pritesh1001/multi-worker
